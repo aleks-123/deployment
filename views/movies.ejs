@@ -12,9 +12,13 @@
         margin: 0;
         padding: 2rem;
       }
-      h1 {
-        margin-top: 0;
+      h1, h2.section {
         color: #f8fafc;
+      }
+      h2.section {
+        margin-top: 2.5rem;
+        border-bottom: 1px solid #334155;
+        padding-bottom: 0.5rem;
       }
       .grid {
         display: grid;
@@ -27,7 +31,7 @@
         border-radius: 8px;
         padding: 1rem;
       }
-      .card h2 {
+      .card h3 {
         margin: 0 0 0.5rem 0;
         font-size: 1.1rem;
         color: #f8fafc;
@@ -37,32 +41,87 @@
         font-size: 0.85rem;
         margin-bottom: 0.5rem;
       }
-      .empty {
-        opacity: 0.7;
+      .empty, .status {
+        opacity: 0.8;
+        color: #94a3b8;
+      }
+      .error {
+        color: #fca5a5;
+        background: #450a0a;
+        border: 1px solid #7f1d1d;
+        padding: 0.75rem 1rem;
+        border-radius: 6px;
       }
     </style>
   </head>
   <body>
     <h1><%= title %></h1>
+
+    <h2 class="section">Server-rendered (EJS)</h2>
     <% if (movies && movies.length > 0) { %>
       <div class="grid">
         <% movies.forEach(function (m) { %>
           <div class="card">
-            <h2><%= m.title %></h2>
+            <h3><%= m.title %></h3>
             <div class="meta">
-              <%= m.director || "Unknown director" %>
-              <% if (m.year) { %> · <%= m.year %><% } %>
+              <% if (m.year) { %><%= m.year %><% } %>
               <% if (m.genre) { %> · <%= m.genre %><% } %>
-              <% if (m.rating != null) { %> · ★ <%= m.rating %><% } %>
+              <% if (m.imbdRating != null) { %> · IMDb <%= m.imbdRating %><% } %>
             </div>
-            <% if (m.description) { %>
-              <p><%= m.description %></p>
-            <% } %>
           </div>
         <% }) %>
       </div>
     <% } else { %>
       <p class="empty">No movies yet. POST to <code>/api/v1/movies</code> to add one.</p>
     <% } %>
+
+    <h2 class="section">Loaded via axios (client-side)</h2>
+    <p id="axios-status" class="status">Loading…</p>
+    <div id="axios-grid" class="grid"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.16.1/dist/axios.min.js"></script>
+    <script>
+      (async function () {
+        const statusEl = document.getElementById("axios-status");
+        const gridEl = document.getElementById("axios-grid");
+
+        try {
+          const res = await axios.get("/api/v1/movies", { timeout: 60000 });
+          const movies = (res.data && res.data.data && res.data.data.movies) || [];
+
+          if (movies.length === 0) {
+            statusEl.textContent = "axios OK — but no movies in DB yet.";
+            return;
+          }
+
+          statusEl.textContent = "axios OK — " + movies.length + " movie(s):";
+          gridEl.innerHTML = movies
+            .map(function (m) {
+              const meta = [
+                m.year || "",
+                m.genre || "",
+                m.imbdRating != null ? "IMDb " + m.imbdRating : "",
+              ]
+                .filter(Boolean)
+                .join(" · ");
+              return (
+                '<div class="card">' +
+                "<h3>" + (m.title || "Untitled") + "</h3>" +
+                '<div class="meta">' + meta + "</div>" +
+                "</div>"
+              );
+            })
+            .join("");
+        } catch (err) {
+          statusEl.className = "error";
+          statusEl.textContent =
+            "axios error: " +
+            (err.response
+              ? err.response.status + " " + (err.response.data && err.response.data.message ? err.response.data.message : err.message)
+              : err.message);
+          console.error(err);
+        }
+      })();
+    </script>
   </body>
 </html>
