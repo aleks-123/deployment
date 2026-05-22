@@ -1,37 +1,39 @@
 const mongoose = require("mongoose");
 
-const movieSchema = new mongoose.Schema(
-  {
-    title: {
-      type: String,
-      required: [true, "A movie must have a title"],
-      trim: true,
-      unique: true,
-    },
-    director: {
-      type: String,
-      trim: true,
-    },
-    year: {
-      type: Number,
-      min: 1888,
-      max: 2100,
-    },
-    genre: {
-      type: String,
-      trim: true,
-    },
-    rating: {
-      type: Number,
-      min: 0,
-      max: 10,
-    },
-    description: {
-      type: String,
-      trim: true,
-    },
+const movieSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: [true, "It must have a title"],
+    trim: true,
+    minlength: [1, "Title is too short"],
+    maxlength: [255, "Title is too long"],
+    unique: [true, "It must have unique Title"],
   },
-  { timestamps: true }
-);
+  year: {
+    type: Number,
+    min: 1800,
+    max: new Date().getFullYear(),
+  },
+  genre: {
+    type: String,
+    enum: ["Action", "Comedy", "Drama", "Fantasy"],
+  },
+  imbdRating: {
+    type: Number,
+    min: 0,
+    max: 10,
+  },
+  slika: {
+    type: String,
+    default: "default.jpg",
+  },
+  sliki: {
+    type: [String],
+  },
+  author: {
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
+  },
+});
 
 module.exports = mongoose.model("Movie", movieSchema);
