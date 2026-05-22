@@ -80,48 +80,6 @@
     <div id="axios-grid" class="grid"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/axios@1.16.1/dist/axios.min.js"></script>
-    <script>
-      (async function () {
-        const statusEl = document.getElementById("axios-status");
-        const gridEl = document.getElementById("axios-grid");
-
-        try {
-          const res = await axios.get("/api/v1/movies", { timeout: 60000 });
-          const movies = (res.data && res.data.data && res.data.data.movies) || [];
-
-          if (movies.length === 0) {
-            statusEl.textContent = "axios OK — but no movies in DB yet.";
-            return;
-          }
-
-          statusEl.textContent = "axios OK — " + movies.length + " movie(s):";
-          gridEl.innerHTML = movies
-            .map(function (m) {
-              const meta = [
-                m.year || "",
-                m.genre || "",
-                m.imbdRating != null ? "IMDb " + m.imbdRating : "",
-              ]
-                .filter(Boolean)
-                .join(" · ");
-              return (
-                '<div class="card">' +
-                "<h3>" + (m.title || "Untitled") + "</h3>" +
-                '<div class="meta">' + meta + "</div>" +
-                "</div>"
-              );
-            })
-            .join("");
-        } catch (err) {
-          statusEl.className = "error";
-          statusEl.textContent =
-            "axios error: " +
-            (err.response
-              ? err.response.status + " " + (err.response.data && err.response.data.message ? err.response.data.message : err.message)
-              : err.message);
-          console.error(err);
-        }
-      })();
-    </script>
+    <script src="/script.js"></script>
   </body>
 </html>
